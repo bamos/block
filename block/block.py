@@ -69,7 +69,7 @@ Row lengths: {}'''.format(rowLens))
 def getBackend(rows, dtype, arrtype):
     if arrtype == np.ndarray and dtype is not None:
         return NumpyBackend(arrtype, dtype)
-    elif re.search('torch\..*Tensor', arrtype):
+    elif arrtype is not None and re.search('torch\..*Tensor', arrtype):
         return TorchBackend(arrtype, dtype)
     else:
         npb = NumpyBackend()
