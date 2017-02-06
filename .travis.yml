@@ -18,4 +18,4 @@ install:
   - python setup.py install
 
 script:
-  - nosetests -v -d block.py
+  - nosetests -v -d test.py
