@@ -40,14 +40,7 @@ Yes, `block` is meant to be a quick prototyping tool and
 there's probably a more efficient way to solve your system
 if it has a lot of zeros or identity elements.
 
-
-# Getting Started
-
-+ Install: `pip install block`
-+ Usage: `from block import block`
-+ Run tests in `test.py`: `nosetests test.py`
-
-# How does `block` handle numpy and PyTorch with the same interface?
+## How does `block` handle numpy and PyTorch with the same interface?
 
 I wrote the logic to handle matrix sizing to be agnostic
 of the matrix library being used.
@@ -56,6 +49,12 @@ More backends can easily be added for your favorite
 Python matrix library.
 
 ![](images/builder.png)
+
+# Getting Started
+
++ Install: `pip install block`
++ Usage: `from block import block`
++ Run tests in `test.py`: `nosetests test.py`
 
 # Issues and Contributions
 
