@@ -18,28 +18,34 @@ paper in numpy and PyTorch:
 
 ![](images/cvxgen-K.png)
 
-![](images/example.png)
-
 Without `block`, there is no way to infer the appropriate sizes of
 the zero and identity matrix blocks.
+It is an inconvenience to think about what size these
+matrices should be.
+
+![](images/example.png)
+
+## What does `block` do?
+
+Block acts a lot like `np.bmat` and replaces:
+
++ Any constant with an appropriately shaped block matrix.
++ The string `'I'` with an appropriately shaped identity matrix.
++ [Request more features](https://github.com/bamos/block/issues).
+
+
+## Isn't constructing large block matrices with a lot of zeros inefficient?
+
+Yes, `block` is meant to be a quick prototyping tool and
+there's probably a more efficient way to solve your system
+if it has a lot of zeros or identity elements.
+
 
 # Getting Started
 
 + Install: `pip install block`
 + Usage: `from block import block`
 + Run tests in `test.py`: `nosetests test.py`
-
-# Isn't constructing large block matrices with a lot of zeros inefficient?
-
-Yes, `block` is meant to be a quick prototyping tool and
-there's probably a more efficient way to solve your system
-if it has a lot of zeros or identity elements.
-
-# What does `block` replace?
-
-+ Any constant with an appropriately shaped block matrix.
-+ The string `'I'` with an appropriately shaped identity matrix.
-+ [Request more features](https://github.com/bamos/block/issues).
 
 # How does `block` handle numpy and PyTorch with the same interface?
 
