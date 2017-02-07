@@ -29,9 +29,10 @@ matrices should be.
 
 Block acts a lot like `np.bmat` and replaces:
 
-+ Any constant with an appropriately shaped block matrix.
++ Any constant with an appropriately shaped block matrix
+  filled with that constant.
 + The string `'I'` with an appropriately shaped identity matrix.
-+ [Request more features](https://github.com/bamos/block/issues).
++ [[Request more features.]](https://github.com/bamos/block/issues)
 
 
 ## Isn't constructing large block matrices with a lot of zeros inefficient?
