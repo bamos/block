@@ -1,5 +1,4 @@
 import numpy as np
-import numpy.random as npr
 
 try:
     import torch
@@ -10,12 +9,10 @@ except:
 import re
 from abc import ABCMeta, abstractmethod
 
-def isListOrTup(x):
-    return isinstance(x, list) or isinstance(x, tuple)
 
 def block(rows, dtype=None, arrtype=None):
-    if (not isListOrTup(rows)) or len(rows) == 0 or \
-       np.any([not isListOrTup(row) for row in rows]):
+    if (not _is_list_or_tup(rows)) or len(rows) == 0 or \
+       np.any([not _is_list_or_tup(row) for row in rows]):
         raise RuntimeError('''
 Unexpected input: Expected a non-empty list of lists.
 If you are interested in helping expand the functionality
@@ -33,12 +30,12 @@ Row lengths: {}'''.format(rowLens))
     rowSizes = np.zeros(nRows, dtype=int)
     colSizes = np.zeros(nCols, dtype=int)
 
-    backend = getBackend(rows, dtype, arrtype)
+    backend = _get_backend(rows, dtype, arrtype)
 
     for i, row in enumerate(rows):
         for j, elem in enumerate(row):
-            if backend.isComplete(elem):
-                rowSz, colSz = backend.getShape(elem)
+            if backend.is_complete(elem):
+                rowSz, colSz = backend.extract_shape(elem)
                 rowSizes[i] = rowSz
                 colSizes[j] = colSz
 
@@ -49,14 +46,14 @@ Row lengths: {}'''.format(rowLens))
         for elem, colSz in zip(row, colSizes):
             colSz = int(colSz)
             # TODO: Check types.
-            if backend.isComplete(elem):
+            if backend.is_complete(elem):
                 cElem = elem
             elif isinstance(elem, float) or isinstance(elem, int):
-                cElem = backend.getFull((rowSz, colSz), elem)
+                cElem = backend.build_full((rowSz, colSz), elem)
             elif isinstance(elem, str):
                 if elem == 'I':
                     assert(rowSz == colSz)
-                    cElem = backend.getEye(rowSz)
+                    cElem = backend.build_eye(rowSz)
                 else:
                     assert(False)
             else:
@@ -66,7 +63,13 @@ Row lengths: {}'''.format(rowLens))
 
     return backend.build(cRows)
 
-def getBackend(rows, dtype, arrtype):
+
+
+def _is_list_or_tup(x):
+    return isinstance(x, list) or isinstance(x, tuple)
+
+
+def _get_backend(rows, dtype, arrtype):
     if arrtype == np.ndarray and dtype is not None:
         return NumpyBackend(arrtype, dtype)
     elif arrtype is not None and re.search('torch\..*Tensor', arrtype):
@@ -76,65 +79,71 @@ def getBackend(rows, dtype, arrtype):
         tb = TorchBackend()
         for row in rows:
             for elem in row:
-                if npb.isComplete(elem):
+                if npb.is_complete(elem):
                     if dtype is None:
-                        dtype = type(elem[0,0])
+                        dtype = type(elem[0, 0])
                     if arrtype is None:
                         arrtype = type(elem)
                     return NumpyBackend(dtype, arrtype)
-                elif tb.isComplete(elem):
+                elif tb.is_complete(elem):
                     return TorchBackend(type(elem))
 
     assert(False)
 
+
 class Backend(metaclass=ABCMeta):
-    @abstractmethod
-    def getShape(self, x): pass
 
     @abstractmethod
-    def getEye(self, n): pass
+    def extract_shape(self, x): pass
 
     @abstractmethod
-    def getFull(self, shape, fill_val): pass
+    def build_eye(self, n): pass
+
+    @abstractmethod
+    def build_full(self, shape, fill_val): pass
 
     @abstractmethod
     def build(self, rows): pass
 
     @abstractmethod
-    def isComplete(self, rows): pass
+    def is_complete(self, rows): pass
+
 
 class NumpyBackend(Backend):
+
     def __init__(self, dtype=None, arrtype=None):
         self.dtype = dtype
         self.arrtype = arrtype
 
-    def getShape(self, x):
+    def extract_shape(self, x):
         return x.shape
 
-    def getEye(self, n):
+    def build_eye(self, n):
         return np.eye(n)
 
-    def getFull(self, shape, fill_val):
+    def build_full(self, shape, fill_val):
         return np.full(shape, fill_val, self.dtype)
 
     def build(self, rows):
         return np.bmat(rows)
 
-    def isComplete(self, x):
+    def is_complete(self, x):
         return isinstance(x, np.ndarray)
 
+
 class TorchBackend(Backend):
+
     def __init__(self, dtype=None):
         self.dtype = dtype
 
-    def getShape(self, x):
+    def extract_shape(self, x):
         return x.size()
 
-    def getEye(self, n):
+    def build_eye(self, n):
         return torch.eye(n).type(self.dtype)
 
-    def getFull(self, shape, fill_val):
-        return fill_val*torch.ones(*shape).type(self.dtype)
+    def build_full(self, shape, fill_val):
+        return fill_val * torch.ones(*shape).type(self.dtype)
 
     def build(self, rows):
         compRows = []
@@ -142,5 +151,5 @@ class TorchBackend(Backend):
             compRows.append(torch.cat(row, 1))
         return torch.cat(compRows)
 
-    def isComplete(self, x):
+    def is_complete(self, x):
         return re.search('torch\..*Tensor', str(x.__class__))

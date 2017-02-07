@@ -48,7 +48,24 @@ numpy and PyTorch are just backends.
 More backends can easily be added for your favorite
 Python matrix library.
 
-![](images/builder.png)
+```Python
+class Backend(metaclass=ABCMeta):
+
+    @abstractmethod
+    def extract_shape(self, x): pass
+
+    @abstractmethod
+    def build_eye(self, n): pass
+
+    @abstractmethod
+    def build_full(self, shape, fill_val): pass
+
+    @abstractmethod
+    def build(self, rows): pass
+
+    @abstractmethod
+    def is_complete(self, rows): pass
+```
 
 # Getting Started
 
