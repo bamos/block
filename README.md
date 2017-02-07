@@ -1,6 +1,6 @@
 # Block • [ ![Build Status] [travis-image] ] [travis] [ ![License] [license-image] ] [license]
 
-*An intelligent block matrix library for numpy, Torch, and beyond.*
+*An intelligent block matrix library for numpy, PyTorch, and beyond.*
 
 [travis-image]: https://travis-ci.org/bamos/block.png?branch=master
 [travis]: http://travis-ci.org/bamos/block
