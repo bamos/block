@@ -91,7 +91,8 @@ def _get_backend(rows, dtype, arrtype):
     assert(False)
 
 
-class Backend(metaclass=ABCMeta):
+class Backend():
+    __metaclass__=ABCMeta
 
     @abstractmethod
     def extract_shape(self, x): pass
