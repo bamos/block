@@ -54,6 +54,9 @@ Row lengths: {}'''.format(rowLens))
                 if elem == 'I':
                     assert(rowSz == colSz)
                     cElem = backend.build_eye(rowSz)
+                elif elem == '-I':
+                    assert(rowSz == colSz)
+                    cElem = -backend.build_eye(rowSz)
                 else:
                     assert(False)
             else:

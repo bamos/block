@@ -32,6 +32,7 @@ Block acts a lot like `np.bmat` and replaces:
 + Any constant with an appropriately shaped block matrix
   filled with that constant.
 + The string `'I'` with an appropriately shaped identity matrix.
++ The string `'-I'` with an appropriately shaped negated identity matrix.
 + [[Request more features.]](https://github.com/bamos/block/issues)
 
 
