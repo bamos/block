@@ -25,8 +25,8 @@ http://github.com/bamos/block''')
 Unexpected input: Rows are not the same length.
 Row lengths: {}'''.format(rowLens))
 
-    nCols = len(rows)
-    nRows = rowLens[0]
+    nRows = len(rows)
+    nCols = rowLens[0]
     rowSizes = np.zeros(nRows, dtype=int)
     colSizes = np.zeros(nCols, dtype=int)
 
@@ -42,9 +42,13 @@ Row lengths: {}'''.format(rowLens))
     cRows = []
     for row, rowSz in zip(rows, rowSizes):
         rowSz = int(rowSz)
+        if rowSz == 0:
+            continue
         cCol = []
         for elem, colSz in zip(row, colSizes):
             colSz = int(colSz)
+            if colSz == 0:
+                continue
             # TODO: Check types.
             if backend.is_complete(elem):
                 cElem = elem
@@ -82,7 +86,7 @@ def _get_backend(rows, dtype, arrtype):
         tb = TorchBackend()
         for row in rows:
             for elem in row:
-                if npb.is_complete(elem):
+                if npb.is_complete(elem) and elem.size > 0:
                     if dtype is None:
                         dtype = type(elem[0, 0])
                     if arrtype is None:

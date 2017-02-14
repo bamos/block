@@ -63,6 +63,18 @@ def test_torch():
 
     assert (K - K_).norm() == 0.0
 
+def test_empty():
+    A = npr.randn(3,0)
+    B = npr.randn(3,3)
+    out = block([[A,B]])
+    assert np.linalg.norm(out-B) == 0.0
+
+    A = npr.randn(0,3)
+    B = npr.randn(3,3)
+    out = block([[A], [B]])
+    assert np.linalg.norm(out-B) == 0.0
+
 if __name__=='__main__':
     test_np()
     test_torch()
+    test_empty()
