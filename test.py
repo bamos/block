@@ -61,7 +61,7 @@ def test_torch():
         (A,   0,     0,     0)
     ))
 
-    assert (K - K).norm() == 0.0
+    assert (K - K_).norm() == 0.0
 
 if __name__=='__main__':
     test_np()
