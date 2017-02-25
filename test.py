@@ -31,11 +31,7 @@ def test_np():
     assert np.allclose(K_, K)
 
 def test_torch():
-    try:
-        import torch
-    except:
-        print('Warning: PyTorch not found. Skipping tests.')
-        return
+    import torch
 
     torch.manual_seed(0)
 
