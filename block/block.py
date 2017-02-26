@@ -1,4 +1,5 @@
 import numpy as np
+import scipy.sparse.linalg as sla
 
 try:
     import torch
@@ -84,6 +85,7 @@ def _get_backend(rows, dtype, arrtype):
     else:
         npb = NumpyBackend()
         tb = TorchBackend()
+        lob = LinearOperatorBackend()
         for row in rows:
             for elem in row:
                 if npb.is_complete(elem) and elem.size > 0:
@@ -94,6 +96,8 @@ def _get_backend(rows, dtype, arrtype):
                     return NumpyBackend(dtype, arrtype)
                 elif tb.is_complete(elem):
                     return TorchBackend(type(elem))
+                elif lob.is_complete(elem):
+                    return LinearOperatorBackend(elem.dtype)
 
     assert(False)
 
@@ -161,3 +165,70 @@ class TorchBackend(Backend):
 
     def is_complete(self, x):
         return re.search('torch\..*Tensor', str(x.__class__))
+
+class LinearOperatorBackend(Backend):
+    def __init__(self, dtype=None):
+        self.dtype = dtype
+    
+    def extract_shape(self, x): 
+        return x.shape
+    
+    def build_eye(self, n): 
+        identity = lambda v: v
+        return sla.LinearOperator(shape=(n,n),
+                                  matvec=identity, 
+                                  rmatvec=identity, 
+                                  matmat=identity,
+                                  dtype=self.dtype)
+
+    
+    def build_full(self, shape, fill_val): 
+        m,n = shape
+        matvec = lambda v: v.sum()*fill_val*np.ones(m)
+        rmatvec = lambda v: v.sum()*fill_val*np.ones(n)
+        matmat = lambda M: M.sum(axis=0)*fill_val*np.ones((m,M.shape[1]))
+        return sla.LinearOperator(shape=shape,
+                                  matvec=matvec, 
+                                  rmatvec=rmatvec, 
+                                  matmat=matmat,
+                                  dtype=self.dtype)
+    
+    def build(self, rows):
+        col_sizes = [lo.shape[1] for lo in rows[0]]
+        col_idxs = np.cumsum([0] + col_sizes)
+        row_sizes = [row[0].shape[0] for row in rows]
+        row_idxs = np.cumsum([0] + row_sizes)
+        m, n = sum(row_sizes), sum(col_sizes)
+
+        def matvec(v): 
+            out = np.zeros(m)
+            for row,i,j in zip(rows, row_idxs[:-1], row_idxs[1:]):
+                out[i:j] = sum(lo.matvec(v[k:l]) for lo,k,l in 
+                                zip(row, col_idxs[:-1], col_idxs[1:]))
+            return out
+
+        # The transposed list
+        cols = zip(*rows)
+        def rmatvec(v): 
+            out = np.zeros(n)
+            for col,i,j in zip(cols, col_idxs[:-1], col_idxs[1:]):
+                out[i:j] = sum(lo.rmatvec(v[k:l]) for lo,k,l in 
+                                zip(col, row_idxs[:-1], row_idxs[1:]))
+            return out
+
+        def matmat(M): 
+            out = np.zeros((m, M.shape[1]))
+            for row,i,j in zip(rows, row_idxs[:-1], row_idxs[1:]):
+                out[i:j] = sum(lo.matmat(M[k:l]) for lo,k,l in 
+                                zip(row, col_idxs[:-1], col_idxs[1:]))
+            return out
+
+        return sla.LinearOperator(shape=(m,n),
+                                  matvec=matvec, 
+                                  rmatvec=rmatvec, 
+                                  matmat=matmat,
+                                  dtype=self.dtype)
+
+    
+    def is_complete(self, x): 
+        return isinstance(x, sla.LinearOperator)
