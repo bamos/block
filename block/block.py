@@ -200,14 +200,17 @@ class LinearOperatorBackend(Backend):
     
     def build_full(self, shape, fill_val): 
         m,n = shape
-        matvec = lambda v: v.sum()*fill_val*np.ones(m)
-        rmatvec = lambda v: v.sum()*fill_val*np.ones(n)
-        matmat = lambda M: M.sum(axis=0)*fill_val*np.ones((m,M.shape[1]))
-        return sla.LinearOperator(shape=shape,
-                                  matvec=matvec, 
-                                  rmatvec=rmatvec, 
-                                  matmat=matmat,
-                                  dtype=self.dtype)
+        if fill_val == 0: 
+            return shape
+        else:
+            matvec = lambda v: v.sum()*fill_val*np.ones(m)
+            rmatvec = lambda v: v.sum()*fill_val*np.ones(n)
+            matmat = lambda M: M.sum(axis=0)*fill_val*np.ones((m,M.shape[1]))
+            return sla.LinearOperator(shape=shape,
+                                      matvec=matvec, 
+                                      rmatvec=rmatvec, 
+                                      matmat=matmat,
+                                      dtype=self.dtype)
     
     def convert(self, x):
         if (isinstance(x, (np.ndarray, sp.spmatrix))):
@@ -216,9 +219,11 @@ class LinearOperatorBackend(Backend):
             assert(False)
 
     def build(self, rows):
-        col_sizes = [lo.shape[1] for lo in rows[0]]
+        col_sizes = [lo.shape[1] if self.is_complete(lo) else lo[1]
+                        for lo in rows[0]]
         col_idxs = np.cumsum([0] + col_sizes)
-        row_sizes = [row[0].shape[0] for row in rows]
+        row_sizes = [row[0].shape[0] if self.is_complete(row[0]) else row[0][0]
+                        for row in rows]
         row_idxs = np.cumsum([0] + row_sizes)
         m, n = sum(row_sizes), sum(col_sizes)
 
@@ -226,7 +231,8 @@ class LinearOperatorBackend(Backend):
             out = np.zeros(m)
             for row,i,j in zip(rows, row_idxs[:-1], row_idxs[1:]):
                 out[i:j] = sum(lo.matvec(v[k:l]) for lo,k,l in 
-                                zip(row, col_idxs[:-1], col_idxs[1:]))
+                                zip(row, col_idxs[:-1], col_idxs[1:])
+                                if self.is_complete(lo))
             return out
 
         # The transposed list
@@ -235,14 +241,16 @@ class LinearOperatorBackend(Backend):
             out = np.zeros(n)
             for col,i,j in zip(cols, col_idxs[:-1], col_idxs[1:]):
                 out[i:j] = sum(lo.rmatvec(v[k:l]) for lo,k,l in 
-                                zip(col, row_idxs[:-1], row_idxs[1:]))
+                                zip(col, row_idxs[:-1], row_idxs[1:])
+                                if self.is_complete(lo))
             return out
 
         def matmat(M): 
             out = np.zeros((m, M.shape[1]))
             for row,i,j in zip(rows, row_idxs[:-1], row_idxs[1:]):
                 out[i:j] = sum(lo.matmat(M[k:l]) for lo,k,l in 
-                                zip(row, col_idxs[:-1], col_idxs[1:]))
+                                zip(row, col_idxs[:-1], col_idxs[1:])
+                                if self.is_complete(lo))
             return out
 
         return sla.LinearOperator(shape=(m,n),
