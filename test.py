@@ -82,11 +82,11 @@ def test_linear_operator():
     D_lo = sla.aslinearoperator(D)
 
     K = block((
-        (   Q_lo,    0, G_lo.H, A_lo.H),
+        (   Q,    0,    G.T,    A.T),
         (   0, D_lo,    'I',      0),
         (G_lo,  'I',      0,      0),
         (A_lo,    0,      0,      0)
-    ))
+    ), arrtype=sla.LinearOperator)
 
     w1 = np.random.randn(K_.shape[1])
     assert np.allclose(K_.dot(w1), K.dot(w1))
