@@ -1,5 +1,6 @@
 import numpy as np
 import scipy.sparse.linalg as sla
+import scipy.sparse as sp
 
 try:
     import torch
@@ -39,6 +40,10 @@ Row lengths: {}'''.format(rowLens))
                 rowSz, colSz = backend.extract_shape(elem)
                 rowSizes[i] = rowSz
                 colSizes[j] = colSz
+            elif hasattr(elem, 'shape'):
+                rowSz, colSz = elem.shape
+                rowSizes[i] = rowSz
+                colSizes[j] = colSz
 
     cRows = []
     for row, rowSz in zip(rows, rowSizes):
@@ -65,7 +70,7 @@ Row lengths: {}'''.format(rowLens))
                 else:
                     assert(False)
             else:
-                assert(False)
+                cElem = backend.convert(elem)
             cCol.append(cElem)
         cRows.append(cCol)
 
@@ -80,6 +85,8 @@ def _is_list_or_tup(x):
 def _get_backend(rows, dtype, arrtype):
     if arrtype == np.ndarray and dtype is not None:
         return NumpyBackend(arrtype, dtype)
+    elif arrtype == sla.LinearOperator: 
+        return LinearOperatorBackend(dtype)
     elif arrtype is not None and re.search('torch\..*Tensor', arrtype):
         return TorchBackend(arrtype, dtype)
     else:
@@ -115,6 +122,9 @@ class Backend():
     def build_full(self, shape, fill_val): pass
 
     @abstractmethod
+    def convert(self, x): pass
+
+    @abstractmethod
     def build(self, rows): pass
 
     @abstractmethod
@@ -136,6 +146,9 @@ class NumpyBackend(Backend):
     def build_full(self, shape, fill_val):
         return np.full(shape, fill_val, self.dtype)
 
+    def convert(self, x):
+        assert(False)
+
     def build(self, rows):
         return np.bmat(rows)
 
@@ -156,6 +169,9 @@ class TorchBackend(Backend):
 
     def build_full(self, shape, fill_val):
         return fill_val * torch.ones(*shape).type(self.dtype)
+
+    def convert(self, x):
+        assert(False)
 
     def build(self, rows):
         compRows = []
@@ -193,6 +209,12 @@ class LinearOperatorBackend(Backend):
                                   matmat=matmat,
                                   dtype=self.dtype)
     
+    def convert(self, x):
+        if (isinstance(x, (np.ndarray, sp.spmatrix))):
+            return sla.aslinearoperator(x)
+        else: 
+            assert(False)
+
     def build(self, rows):
         col_sizes = [lo.shape[1] for lo in rows[0]]
         col_idxs = np.cumsum([0] + col_sizes)
