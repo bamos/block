@@ -2,7 +2,7 @@ from setuptools import find_packages, setup
 
 setup(
     name='block',
-    version='0.0.2',
+    version='0.0.3',
     description="Improved block matrix creation for numpy and PyTorch.",
     author='Brandon Amos',
     author_email='bamos@cs.cmu.edu',
