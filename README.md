@@ -1,4 +1,4 @@
-# Block • [ ![Build Status] [travis-image] ] [travis] [ ![License] [license-image] ] [license]
+# Block • [![Build Status][travis-image]][travis] [![License][license-image]][license]
 
 *An intelligent block matrix library for numpy, PyTorch, and beyond.*
 
