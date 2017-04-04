@@ -33,6 +33,7 @@ def test_np():
 
 def test_torch():
     import torch
+    from torch.autograd import Variable
 
     torch.manual_seed(0)
 
@@ -59,6 +60,14 @@ def test_torch():
     ))
 
     assert (K - K_).norm() == 0.0
+    K = block((
+        (Variable(Q),   0, G.t(), Variable(A.t())),
+        (0,   Variable(D),   'I',     0),
+        (Variable(G), 'I',     0,     0),
+        (A,   0,     0,     0)
+    ))
+    
+    assert (K.data - K_).norm() == 0.0
 
 def test_linear_operator():
     npr.seed(0)

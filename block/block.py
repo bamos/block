@@ -4,6 +4,7 @@ import scipy.sparse as sp
 
 try:
     import torch
+    from torch.autograd import Variable
 except:
     pass
 
@@ -42,6 +43,10 @@ Row lengths: {}'''.format(rowLens))
                 colSizes[j] = colSz
             elif hasattr(elem, 'shape'):
                 rowSz, colSz = elem.shape
+                rowSizes[i] = rowSz
+                colSizes[j] = colSz
+            elif hasattr(elem, 'size'): 
+                rowSz, colSz = elem.size()
                 rowSizes[i] = rowSz
                 colSizes[j] = colSz
 
@@ -89,10 +94,13 @@ def _get_backend(rows, dtype, arrtype):
         return LinearOperatorBackend(dtype)
     elif arrtype is not None and re.search('torch\..*Tensor', arrtype):
         return TorchBackend(arrtype, dtype)
+    elif arrtype is not None and re.search('torch\..*Variable', arrtype):
+        return TorchVariableBackend(arrtype, dtype)
     else:
         npb = NumpyBackend()
         tb = TorchBackend()
         lob = LinearOperatorBackend()
+        tvb = TorchVariableBackend()
         for row in rows:
             for elem in row:
                 if npb.is_complete(elem) and elem.size > 0:
@@ -105,6 +113,8 @@ def _get_backend(rows, dtype, arrtype):
                     return TorchBackend(type(elem))
                 elif lob.is_complete(elem):
                     return LinearOperatorBackend(elem.dtype)
+                elif tvb.is_complete(elem): 
+                    return TorchVariableBackend(type(elem.data))
 
     assert(False)
 
@@ -181,6 +191,20 @@ class TorchBackend(Backend):
 
     def is_complete(self, x):
         return re.search('torch\..*Tensor', str(x.__class__))
+
+class TorchVariableBackend(TorchBackend):
+    def build_eye(self, n): 
+        return Variable(super().build_eye(n))
+
+    def build_full(self, shape, fill_val): 
+        return Variable(super().build_full(shape, fill_val))
+
+    def convert(self, x): 
+        if TorchBackend.is_complete(self, x): 
+            return Variable(x)
+
+    def is_complete(self, x):
+        return re.search('torch\..*Variable', str(x.__class__))
 
 class LinearOperatorBackend(Backend):
     def __init__(self, dtype=None):
