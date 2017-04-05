@@ -190,7 +190,8 @@ class TorchBackend(Backend):
         return torch.cat(compRows)
 
     def is_complete(self, x):
-        return re.search('torch\..*Tensor', str(x.__class__))
+        return (re.search('torch\..*Tensor', str(x.__class__)) is not None) \
+            and x.ndimension() == 2
 
 class TorchVariableBackend(TorchBackend):
     def build_eye(self, n): 
