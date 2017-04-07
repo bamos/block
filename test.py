@@ -4,7 +4,7 @@ import numpy as np
 import numpy.random as npr
 import scipy.sparse.linalg as sla
 
-from block import block
+from block import block, block_diag
 
 def test_np():
     npr.seed(0)
@@ -28,6 +28,20 @@ def test_np():
         (G, 'I',   0,   0),
         (A,   0,   0,   0)
     ))
+
+    assert np.allclose(K_, K)
+
+def test_diag():
+    n0, n1, n2, n3 = 4, 5, 6, 7
+    A = npr.randn(n0, n1)
+    B = npr.randn(n2, n3)
+
+    K_ = np.bmat((
+        (A, np.zeros((n0, n3))),
+        (np.zeros((n2, n1)), B)
+        ))
+
+    K = block_diag((A,B))
 
     assert np.allclose(K_, K)
 
@@ -120,3 +134,4 @@ if __name__=='__main__':
     test_torch()
     test_empty()
     test_linear_operator()
+    test_diag()
