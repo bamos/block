@@ -83,7 +83,8 @@ Row lengths: {}'''.format(rowLens))
 
 def block_diag(elems, dtype=None, arrtype=None): 
     n = len(elems)
-    return block([[0]*i + [elem] + [0]*(n-1-i) for i,elem in enumerate(elems)])
+    return block([[0]*i + [elem] + [0]*(n-1-i) for i,elem in enumerate(elems)],
+                 dtype=dtype, arrtype=arrtype)
 
 def _is_list_or_tup(x):
     return isinstance(x, list) or isinstance(x, tuple)
