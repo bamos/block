@@ -6,7 +6,7 @@
 [license-image]: http://img.shields.io/badge/license-Apache--2-blue.svg?style=flat
 [license]: LICENSE
 
-[pypi-image]: https://img.shields.io/pypi/v/nine.svg
+[pypi-image]: https://img.shields.io/pypi/v/block.svg
 [pypi]: https://pypi.python.org/pypi/block
 
 *An intelligent block matrix library for numpy, PyTorch, and beyond.
