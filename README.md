@@ -1,7 +1,5 @@
 # Block • [![Build Status][travis-image]][travis] [![License][license-image]][license] [![PyPi][pypi-image]][pypi]
 
-*An intelligent block matrix library for numpy, PyTorch, and beyond.*
-
 [travis-image]: https://travis-ci.org/bamos/block.png?branch=master
 [travis]: http://travis-ci.org/bamos/block
 
@@ -10,6 +8,10 @@
 
 [pypi-image]: https://img.shields.io/pypi/v/nine.svg
 [pypi]: https://pypi.python.org/pypi/block
+
+*An intelligent block matrix library for numpy, PyTorch, and beyond.
+Crafted by [Brandon Amos](http://bamos.github.io) with significant
+contributions by [Eric Wong](http://www.cs.cmu.edu/~ericwong/).*
 
 ---
 
