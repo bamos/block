@@ -32,3 +32,12 @@ deploy:
   on:
     distributions: sdist bdist_wheel
     repo: bamos/block
+
+matrix:
+    fast_finish: true
+    include:
+        env: LINT_CHECK
+        python: "3.5"
+        addons: true
+        install: pip install flake8
+        script: flake8
