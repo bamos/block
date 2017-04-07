@@ -32,6 +32,7 @@ deploy:
   on:
     distributions: sdist bdist_wheel
     repo: bamos/block
+    tags: true
 
 matrix:
     fast_finish: true
