@@ -98,10 +98,10 @@ def _get_backend(rows, dtype, arrtype):
         return NumpyBackend(arrtype, dtype)
     elif arrtype == sla.LinearOperator:
         return LinearOperatorBackend(dtype)
-    elif arrtype is not None and re.search('torch\..*Tensor', arrtype):
-        return TorchBackend(arrtype, dtype)
-    elif arrtype is not None and re.search('torch\..*Variable', arrtype):
-        return TorchVariableBackend(arrtype, dtype)
+    elif arrtype is not None and re.search('torch\..*Tensor', repr(arrtype)):
+        return TorchBackend(dtype)
+    elif arrtype is not None and re.search('torch\..*(Variable|Parameter)', repr(arrtype)):
+        return TorchVariableBackend(dtype)
     else:
         npb = NumpyBackend()
         tb = TorchBackend()
@@ -210,9 +210,10 @@ class TorchVariableBackend(TorchBackend):
     def convert(self, x):
         if TorchBackend.is_complete(self, x):
             return Variable(x)
+        assert(False)
 
     def is_complete(self, x):
-        return re.search('torch\..*Variable', str(x.__class__))
+        return re.search('torch\..*(Variable|Parameter)', str(x.__class__))
 
 
 class LinearOperatorBackend(Backend):
