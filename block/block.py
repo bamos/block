@@ -236,12 +236,15 @@ class LinearOperatorBackend(Backend):
         if fill_val == 0:
             return shape
         else:
-            def matvec(v): return v.sum() * fill_val * np.ones(m)
+            def matvec(v):
+                return v.sum() * fill_val * np.ones(m)
 
-            def rmatvec(v): return v.sum() * fill_val * np.ones(n)
+            def rmatvec(v):
+                return v.sum() * fill_val * np.ones(n)
 
-            def matmat(M): return M.sum(axis=0) * \
-                fill_val * np.ones((m, M.shape[1]))
+            def matmat(M):
+                return M.sum(axis=0) * fill_val * np.ones((m, M.shape[1]))
+
             return sla.LinearOperator(shape=shape,
                                       matvec=matvec,
                                       rmatvec=rmatvec,

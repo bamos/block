@@ -41,4 +41,4 @@ matrix:
         python: "3.5"
         addons: true
         install: pip install flake8
-        script: flake8 --ignore=E501
+        script: flake8 --ignore=E501,E241,E704
