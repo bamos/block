@@ -88,25 +88,20 @@ def block_diag(elems, dtype=None, arrtype=None):
                   for i, elem in enumerate(elems)],
                  dtype=dtype, arrtype=arrtype)
 
-def block_tridiag(diagonals): # 'I' or 0 as members are allowed
-    #Tridiagonal block matrices are quite frequent in Physics and Engineering problems
-    #Ordering from left to right
-    #diagonals[0]: diagonal
-    #diagonals[1]: upper diag
-    #diagnals[2]: lower diag
-    if ((len(diagonals[0])!=len(diagonals[1])+1) or (len(diagonals[0])!=len(diagonals[2])+1)):
-        print('Off diagonals must be of smaller sizes! Please check')
-        return None
-    shape = len(diagonals[0])
+
+def block_tridiag(main, upper, lower):
+    n = len(main)
+    assert len(main) == len(upper) + 1
+    assert len(main) == len(lower) + 1
     mat = ()
-    for i in range(shape):
+    for i in range(n):
         tup = ()
-        for j in range(shape):
-            if (i==j):   tup = (*tup,diagonals[0][i])
-            elif (i==j-1): tup = (*tup,diagonals[1][-i])
-            elif (i==j+1): tup = (*tup,diagonals[2][i-1])
+        for j in range(n):
+            if (i==j):   tup = (*tup, main[i])
+            elif (i==j-1): tup = (*tup, upper[-i])
+            elif (i==j+1): tup = (*tup, lower[i-1])
             else: tup = (*tup,0)
-        mat = (*mat,tup)        
+        mat = (*mat,tup)
     return block(mat)
 
 def _is_list_or_tup(x):
