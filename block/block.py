@@ -5,7 +5,7 @@ import scipy.sparse as sp
 try:
     import torch
     from torch.autograd import Variable
-except:
+except ImportError:
     pass
 
 
@@ -97,12 +97,17 @@ def block_tridiag(main, upper, lower):
     for i in range(n):
         tup = ()
         for j in range(n):
-            if (i==j):   tup = (*tup, main[i])
-            elif (i==j-1): tup = (*tup, upper[-i])
-            elif (i==j+1): tup = (*tup, lower[i-1])
-            else: tup = (*tup,0)
-        mat = (*mat,tup)
+            if (i == j):
+                tup = (*tup, main[i])
+            elif (i == j-1):
+                tup = (*tup, upper[-i])
+            elif (i == j+1):
+                tup = (*tup, lower[i-1])
+            else:
+                tup = (*tup, 0)
+        mat = (*mat, tup)
     return block(mat)
+
 
 def _is_list_or_tup(x):
     return isinstance(x, list) or isinstance(x, tuple)
@@ -113,9 +118,10 @@ def _get_backend(rows, dtype, arrtype):
         return NumpyBackend(arrtype, dtype)
     elif arrtype == sla.LinearOperator:
         return LinearOperatorBackend(dtype)
-    elif arrtype is not None and re.search('torch\..*Tensor', repr(arrtype)):
+    elif arrtype is not None and re.search(r'torch\..*Tensor', repr(arrtype)):
         return TorchBackend(dtype)
-    elif arrtype is not None and re.search('torch\..*(Variable|Parameter)', repr(arrtype)):
+    elif arrtype is not None and \
+            re.search(r'torch\..*(Variable|Parameter)', repr(arrtype)):
         return TorchVariableBackend(dtype)
     else:
         npb = NumpyBackend()
@@ -211,7 +217,7 @@ class TorchBackend(Backend):
         return torch.cat(compRows)
 
     def is_complete(self, x):
-        return (re.search('torch\..*Tensor', str(x.__class__)) is not None) \
+        return (re.search(r'torch\..*Tensor', str(x.__class__)) is not None) \
             and x.ndimension() == 2
 
 
@@ -228,7 +234,7 @@ class TorchVariableBackend(TorchBackend):
         assert(False)
 
     def is_complete(self, x):
-        return re.search('torch\..*(Variable|Parameter)', str(x.__class__))
+        return re.search(r'torch\..*(Variable|Parameter)', str(x.__class__))
 
 
 class LinearOperatorBackend(Backend):
