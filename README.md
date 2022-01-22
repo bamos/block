@@ -1,7 +1,4 @@
-# Block • [![Build Status][travis-image]][travis] [![License][license-image]][license] [![PyPi][pypi-image]][pypi]
-
-[travis-image]: https://travis-ci.org/bamos/block.png?branch=master
-[travis]: http://travis-ci.org/bamos/block
+# Block • [![License][license-image]][license] [![PyPi][pypi-image]][pypi]
 
 [license-image]: http://img.shields.io/badge/license-Apache--2-blue.svg?style=flat
 [license]: LICENSE
