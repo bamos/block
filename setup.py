@@ -11,6 +11,6 @@ setup(
     url='https://github.com/bamos/block',
     packages=find_packages(),
     install_requires=[
-        'numpy>=1<2',
+        'numpy>=1,<2',
     ]
 )
